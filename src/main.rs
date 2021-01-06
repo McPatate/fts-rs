@@ -35,6 +35,18 @@ fn parse_documents(xml: &str) -> Result<Vec<Doc>, DeError> {
     Ok(docs)
 }
 
+fn naive_search(docs: &Vec<Doc>, term: &str) {
+    for doc in docs {
+        if doc.r#abstract.contains(term) {
+            println!("found {} in {}", term, doc.title);
+        }
+    }
+}
+
+fn tokenizer(phrase: String) -> Vec<String> {
+    phrase.split(|c: char| c.is_alphanumeric()).collect()
+}
+
 fn main() {
     let xml = match load_corpus() {
         Ok(x) => x,
@@ -44,5 +56,5 @@ fn main() {
         Ok(d) => d,
         Err(e) => panic!("couldn't parse docs : {}", e),
     };
-    println!("{:?}", docs);
+    naive_search(&docs, "cat");
 }
