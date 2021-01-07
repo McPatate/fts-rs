@@ -6,6 +6,136 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::time::Instant;
 
+const STOPWORDS: [&str; 127] = [
+    "i",
+    "me",
+    "my",
+    "myself",
+    "we",
+    "our",
+    "ours",
+    "ourselves",
+    "you",
+    "your",
+    "yours",
+    "yourself",
+    "yourselves",
+    "he",
+    "him",
+    "his",
+    "himself",
+    "she",
+    "her",
+    "hers",
+    "herself",
+    "it",
+    "its",
+    "itself",
+    "they",
+    "them",
+    "their",
+    "theirs",
+    "themselves",
+    "what",
+    "which",
+    "who",
+    "whom",
+    "this",
+    "that",
+    "these",
+    "those",
+    "am",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "being",
+    "have",
+    "has",
+    "had",
+    "having",
+    "do",
+    "does",
+    "did",
+    "doing",
+    "a",
+    "an",
+    "the",
+    "and",
+    "but",
+    "if",
+    "or",
+    "because",
+    "as",
+    "until",
+    "while",
+    "of",
+    "at",
+    "by",
+    "for",
+    "with",
+    "about",
+    "against",
+    "between",
+    "into",
+    "through",
+    "during",
+    "before",
+    "after",
+    "above",
+    "below",
+    "to",
+    "from",
+    "up",
+    "down",
+    "in",
+    "out",
+    "on",
+    "off",
+    "over",
+    "under",
+    "again",
+    "further",
+    "then",
+    "once",
+    "here",
+    "there",
+    "when",
+    "where",
+    "why",
+    "how",
+    "all",
+    "any",
+    "both",
+    "each",
+    "few",
+    "more",
+    "most",
+    "other",
+    "some",
+    "such",
+    "no",
+    "nor",
+    "not",
+    "only",
+    "own",
+    "same",
+    "so",
+    "than",
+    "too",
+    "very",
+    "s",
+    "t",
+    "can",
+    "will",
+    "just",
+    "don",
+    "should",
+    "now",
+];
+
 #[derive(Debug, Deserialize, PartialEq)]
 struct Doc {
     title: String,
@@ -48,9 +178,17 @@ fn naive_search(docs: &Vec<Doc>, term: &str) -> Vec<Doc> {
 
 fn tokenizer(phrase: String) -> Vec<String> {
     phrase
-        .split(|c: char| !c.is_alphanumeric())
+        .split_terminator(|c: char| !c.is_alphanumeric())
         .map(|s| s.to_string())
         .collect()
+}
+
+fn lowercase_filter(tokens: Vec<String>) -> Vec<String> {
+    let mut res: Vec<String> = Vec::with_capacity(tokens.len());
+    for token in tokens {
+        res.push(token.to_lowercase());
+    }
+    res
 }
 
 fn build_inverted_index() -> () {}
@@ -80,21 +218,35 @@ fn main() {
     );
 }
 
-// #[cfg(test)]
-// mod search_tests {
-//     use super::*;
-//
-//     #[bench]
-//     fn naive_search_test() {
-//         let xml = match load_corpus() {
-//             Ok(x) => x,
-//             Err(_) => panic!("Couldn't load wiki corpus"),
-//         };
-//         let docs = match parse_documents(&xml) {
-//             Ok(d) => d,
-//             Err(e) => panic!("couldn't parse docs : {}", e),
-//         };
-//         let search_term = "cat";
-//         let search_res = naive_search(&docs, search_term);
-//     }
-// }
+#[cfg(test)]
+mod search_tests {
+    use super::*;
+
+    #[test]
+    fn tokenizer_test() {
+        let tokens = vec!["Hello".to_string(), "world".to_string()];
+
+        assert_eq!(tokenizer("Hello world!".to_string()), tokens);
+    }
+
+    #[test]
+    fn lowercase_filter_test() {
+        let lowered: Vec<String> = vec!["hello".to_string(), "world".to_string()];
+        let upper: Vec<String> = vec!["Hello".to_string(), "world".to_string()];
+
+        assert_eq!(lowercase_filter(upper), lowered);
+    }
+    //     #[bench]
+    //     fn naive_search_test() {
+    //         let xml = match load_corpus() {
+    //             Ok(x) => x,
+    //             Err(_) => panic!("Couldn't load wiki corpus"),
+    //         };
+    //         let docs = match parse_documents(&xml) {
+    //             Ok(d) => d,
+    //             Err(e) => panic!("couldn't parse docs : {}", e),
+    //         };
+    //         let search_term = "cat";
+    //         let search_res = naive_search(&docs, search_term);
+    //     }
+}
