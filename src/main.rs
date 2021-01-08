@@ -1,5 +1,6 @@
 use log::info;
 use quick_xml::de::{from_str, DeError};
+use rust_stemmers::{Algorithm, Stemmer};
 use serde::Deserialize;
 use std::fs::File;
 use std::io::prelude::*;
@@ -191,6 +192,24 @@ fn lowercase_filter(tokens: Vec<String>) -> Vec<String> {
     res
 }
 
+fn stopwords_filter(tokens: Vec<String>) -> Vec<String> {
+    let mut res: Vec<String> = Vec::with_capacity(tokens.len());
+    for token in tokens {
+        if !STOPWORDS.contains(&&token[..]) {
+            res.push(token.to_string());
+        }
+    }
+    res
+}
+
+fn stemming_filter(stemmer: Stemmer, tokens: Vec<String>) -> Vec<String> {
+    let mut res: Vec<String> = Vec::with_capacity(tokens.len());
+    for token in tokens {
+        res.push(stemmer.stem(&token[..]).to_string());
+    }
+    res
+}
+
 fn build_inverted_index() -> () {}
 
 fn main() {
@@ -236,6 +255,37 @@ mod search_tests {
 
         assert_eq!(lowercase_filter(upper), lowered);
     }
+
+    #[test]
+    fn stopwords_filter_test() {
+        let filtered: Vec<String> = vec!["Hello".to_string(), "world".to_string()];
+        let phrase: Vec<String> = vec![
+            "Hello".to_string(),
+            "to".to_string(),
+            "the".to_string(),
+            "world".to_string(),
+        ];
+
+        assert_eq!(stopwords_filter(phrase), filtered);
+    }
+
+    #[test]
+    fn stemming_filter_test() {
+        let en_stem: Stemmer = Stemmer::create(Algorithm::English);
+        let filtered: Vec<String> = vec![
+            "Hello".to_string(),
+            "borrow".to_string(),
+            "world".to_string(),
+        ];
+        let phrase: Vec<String> = vec![
+            "Hello".to_string(),
+            "borrowed".to_string(),
+            "worldly".to_string(),
+        ];
+
+        assert_eq!(stemming_filter(en_stem, phrase), filtered);
+    }
+
     //     #[bench]
     //     fn naive_search_test() {
     //         let xml = match load_corpus() {
