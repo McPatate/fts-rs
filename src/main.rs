@@ -1,4 +1,5 @@
 mod inverted_index;
+mod query_parser;
 mod skiplist;
 mod wiki;
 
