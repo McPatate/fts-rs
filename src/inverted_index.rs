@@ -66,7 +66,7 @@ impl InvertedIndex {
         let tokens = tokens.unwrap();
         let mut stack: Vec<Vec<usize>> = Vec::with_capacity(tokens.len());
         for token in tokens {
-            if !qp.operators.contains(&token) {
+            if !qp.operators.contains(&&token[..]) {
                 match self.idx.get(&token) {
                     Some(pl) => stack.push(pl.to_vec()),
                     None => stack.push(Vec::new()),

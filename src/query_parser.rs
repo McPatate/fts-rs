@@ -1,17 +1,15 @@
-pub struct QueryParser {
-    pub operators: Vec<String>,
+pub struct QueryParser<'a> {
+    pub operators: &'a [&'a str; 3],
 }
 
 // Would be interesting to create a BooleanQueryParser
 // and maybe others ?
 // Must think harder on how to organise code
-impl QueryParser {
+impl<'a> QueryParser<'a> {
     pub fn new() -> Self {
-        let mut op = Vec::new();
-        op.push("AND".to_string());
-        op.push("OR".to_string());
-        op.push("NOT".to_string());
-        QueryParser { operators: op }
+        QueryParser {
+            operators: &["AND", "OR", "NOT"],
+        }
     }
 
     pub fn tokenize_parenthesis(tokens: Vec<String>) -> Vec<String> {
@@ -49,7 +47,7 @@ impl QueryParser {
         let mut op_stack: Vec<String> = Vec::new();
         let mut res: Vec<String> = Vec::with_capacity(tokens.len());
         for token in tokens {
-            if self.operators.contains(&token) {
+            if self.operators.contains(&&token[..]) {
                 while op_stack.len() > 0
                     && ((op_stack.last().unwrap() == "NOT" && token != "NOT")
                         || &token == op_stack.last().unwrap())
